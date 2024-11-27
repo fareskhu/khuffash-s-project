@@ -1,18 +1,21 @@
 import 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StyleSheet, Text, View, Pressable, ScrollView } from 'react-native';
+import { StyleSheet, Text, View, Pressable, FlatList } from 'react-native';
 import { useState } from 'react';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import Categories from './Categories';
+import { useSelector } from 'react-redux'; // Import this to access the username from the Redux store
 
 const GameCreationScreen = () => {
   const [selectedText, setSelectedText] = useState('العب');
   const navigation = useNavigation();
+  const route = useRoute();
+  const username = useSelector((state) => state.auth.user); // Access the username from the Redux store
 
   const handlePress = (text) => {
     setSelectedText(text);
     if (text === 'الرئيسية') {
-      navigation.navigate('Home', { selectedOption: 'الرئيسية' });
+      navigation.navigate('Home', { selectedOption: 'الرئيسية', username });
     }
   };
 
@@ -21,40 +24,43 @@ const GameCreationScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.root} contentContainerStyle={styles.scrollContainer}>
-      {/* Header Section */}
-      <View style={styles.header}>
-        <Pressable style={styles.createAccount} onPress={signUpHandler}>
-          <Text style={styles.createAccountText}>انشئ حساب</Text>
-        </Pressable>
-        {['العب', 'العابي السابقة', 'الرئيسية'].map((text, index) => (
-          <Pressable
-            key={index}
-            onPress={() => handlePress(text)}
-            style={[styles.navTextContainer, selectedText === text && styles.selectedNav]}>
-            <Text style={[styles.navText, selectedText === text && styles.selectedNavText]}>
-              {text}
+    <FlatList
+      data={[]} // No data is needed; we are using this for layout
+      ListHeaderComponent={
+        <View>
+          {/* Header Section */}
+          <View style={styles.header}>
+            <Pressable style={styles.createAccount} onPress={signUpHandler}>
+              <Text style={styles.createAccountText}>{username || 'انشئ حساب'}</Text>
+            </Pressable>
+            {['العب', 'العابي السابقة', 'الرئيسية'].map((text, index) => (
+              <Pressable
+                key={index}
+                onPress={() => handlePress(text)}
+                style={[styles.navTextContainer, selectedText === text && styles.selectedNav]}>
+                <Text style={[styles.navText, selectedText === text && styles.selectedNavText]}>
+                  {text}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+
+          {/* Linear Gradient Section */}
+          <LinearGradient colors={['#4CAF50', '#81C784']} style={styles.linearGradient}>
+            <Text style={styles.logoText}>🎮 إنشاء لعبة جديدة</Text>
+            <Text style={styles.taglineText}>
+              لإنشاء لعبة جديدة على كل فريق اختيار ٣ فئات وبعدها اضغط على ابدأ اللعب
             </Text>
-          </Pressable>
-        ))}
-      </View>
+          </LinearGradient>
 
-      {/* Linear Gradient Section */}
-      <LinearGradient colors={['#4CAF50', '#81C784']} style={styles.linearGradient}>
-        <Text style={styles.logoText}>🎮 إنشاء لعبة جديدة</Text>
-        <Text style={styles.taglineText}>
-          لإنشاء لعبة جديدة على كل فريق اختيار ٣ فئات وبعدها اضغط على ابدأ اللعب
-        </Text>
-      </LinearGradient>
-
-      {/* Category Selection Title */}
-      <View style={styles.categorySelectionContainer}>
-        <Text style={styles.categorySelectionText}>اختر الفئات</Text>
-      </View>
-
-      {/* Categories Component */}
-      <Categories />
-    </ScrollView>
+          {/* Category Selection Title */}
+          <View style={styles.categorySelectionContainer}>
+            <Text style={styles.categorySelectionText}>اختر الفئات</Text>
+          </View>
+        </View>
+      }
+      ListFooterComponent={<Categories />} // The Categories component will be rendered below the header
+    />
   );
 };
 

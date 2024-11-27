@@ -2,16 +2,27 @@ import React, { useState } from 'react';
 import { StyleSheet, TextInput, View, Text, Pressable } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import firebase from './firebaseConfig';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from './authActions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const LoginScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   const loginHandler = async () => {
     try {
-      await firebase.auth().signInWithEmailAndPassword(email, password);
+      const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+
+      // Save user data to AsyncStorage
+
+      // Dispatch login success action
+      dispatch(loginSuccess(user.email || user.displayName || 'User'));
+
       navigation.navigate('Home');
     } catch (error) {
       if (error.code === 'auth/user-not-found') {

@@ -3,8 +3,12 @@ import { StyleSheet, TextInput, View, Text, Pressable, Keyboard } from 'react-na
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import firebase from './firebaseConfig';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from './authActions';
 
 const SignUpScreen = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState('');
@@ -12,6 +16,7 @@ const SignUpScreen = () => {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [hidePassword, setHidePassword] = useState(true);
   const navigation = useNavigation();
+  const dispatch = useDispatch();
 
   const emailRegex = /^[A-Za-z][A-Za-z0-9_-]*@(gmail|yahoo|outlook|hotmail)\.(com|net|org)$/;
   const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -19,9 +24,16 @@ const SignUpScreen = () => {
   const signUpHandler = async () => {
     try {
       console.log('log1', email, password); // Logs input values before attempting signup
-      await firebase.auth().createUserWithEmailAndPassword(email, password);
+      const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
+      const user = userCredential.user;
+
+      // Save the username in AsyncStorage for persistent login
+
+      // Dispatch login success action to update the Redux state
+      dispatch(loginSuccess(username));
+
       console.log('log2'); // Logs after successful account creation
-      navigation.navigate('Home'); // Navigate to Home screen on success
+      navigation.navigate('Home', { username }); // Navigate to Home screen on success
     } catch (error) {
       console.log('Firebase signup error:', error); // Logs the complete error object
       if (error.code === 'auth/email-already-in-use') {
@@ -85,6 +97,16 @@ const SignUpScreen = () => {
   return (
     <Pressable style={styles.container} onPress={dismissKeyboardHandler}>
       <Text style={styles.headerText}>إنشاء حساب</Text>
+
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="اسم المستخدم"
+          placeholderTextColor="#8c8c8c"
+          onChangeText={setUsername}
+          value={username}
+        />
+      </View>
 
       <View style={styles.inputContainer}>
         <TextInput

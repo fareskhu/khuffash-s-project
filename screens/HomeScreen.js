@@ -2,12 +2,16 @@ import 'react-native-gesture-handler';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet, Text, View, Pressable, ScrollView, Image } from 'react-native';
 import { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useNavigation, useRoute } from '@react-navigation/native';
+import PurchasePackages from './PurchasePackages';
 
 const HomeScreen = () => {
   const [selectedText, setSelectedText] = useState('الرئيسية');
   const navigation = useNavigation();
   const route = useRoute();
+  const username = useSelector((state) => state.auth.user);
+  const displayName = username ? username : 'انشئ حساب';
 
   useEffect(() => {
     if (route.params?.selectedOption) {
@@ -26,15 +30,21 @@ const HomeScreen = () => {
     navigation.navigate('GameCreationScreen');
   };
 
-  const signUpHandler = () => {
-    navigation.navigate('SignUp');
+  const handleAccountPress = () => {
+    if (username) {
+      // Navigate to LogoutScreen if the user is logged in
+      navigation.navigate('Logout');
+    } else {
+      // Navigate to SignUpScreen if the user is not logged in
+      navigation.navigate('SignUp');
+    }
   };
 
   return (
     <ScrollView style={styles.root}>
       <View style={styles.header}>
-        <Pressable style={styles.createAccount} onPress={signUpHandler}>
-          <Text style={styles.createAccountText}>انشئ حساب</Text>
+        <Pressable style={styles.createAccount} onPress={handleAccountPress}>
+          <Text style={styles.createAccountText}>{displayName}</Text>
         </Pressable>
         {['العب', 'العابي السابقة', 'الرئيسية'].map((text, index) => (
           <Pressable
@@ -80,9 +90,12 @@ const HomeScreen = () => {
           <Text style={styles.newGameButtonText}>انشاء لعبة</Text>
         </Pressable>
       </View>
+      {/* Add the PurchasePackages component here */}
+      <PurchasePackages />
     </ScrollView>
   );
 };
+
 export default HomeScreen;
 
 const styles = StyleSheet.create({
